@@ -19,9 +19,17 @@
 <script>
 
 var n = 40,
-    random = d3.randomNormal(0, .2);
+    randNorm = d3.randomNormal(0, .2);
 
-var timeRange = (n - 2) * 1000;
+// function random() {
+//   return (randNorm() + randNorm() + randNorm() + randNorm() + randNorm() + randNorm()) / 6;
+// }
+
+var random = randNorm;
+
+var duration = 100;
+
+var timeRange = (n - 2) * duration;
 var endTime = new Date();
 var startTime = new Date(endTime.getTime() - timeRange);
 
@@ -68,8 +76,6 @@ g.append("g")
 g.append("g")
     .attr("class", "axis axis--y")
     .call(d3.axisLeft(y));
-
-var duration = 1000;
 
 g.append("g")
   .append("path")
