@@ -83,7 +83,12 @@ function tick() {
     value: random()
   });
 
-  x.domain([data[0].date, data[data.length-1].date]);
+  // Pop the old data point off the front.
+  data.shift();
+
+  endTime = data[data.length-1].date;
+  startTime = data[0].date;
+  x.domain([startTime, endTime]);
   y.domain([
     d3.min(data, function(d) { return d.value; }),
     d3.max(data, function(d) { return d.value; })
@@ -91,9 +96,11 @@ function tick() {
 
   svg.select(".axis--x")
     .attr("transform", "translate(0," + y(0) + ")")
+    .transition()
     .call(d3.axisBottom(x));
 
   svg.select(".axis--y")
+    .transition()
     .call(d3.axisLeft(y));
 
   // Redraw the line.
@@ -103,12 +110,9 @@ function tick() {
 
   // Slide it to the left.
   d3.active(this)
+      .transition()
       .attr("transform", "translate(" + x(data[0].date) + ",0)")
-    .transition()
       .on("start", tick);
-
-  // Pop the old data point off the front.
-  data.shift();
 }
 
 </script>
