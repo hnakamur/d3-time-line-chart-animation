@@ -96,7 +96,6 @@ function tick() {
 
   svg.select(".axis--x")
     .attr("transform", "translate(0," + y(0) + ")")
-    .transition()
     .call(d3.axisBottom(x));
 
   svg.select(".axis--y")
