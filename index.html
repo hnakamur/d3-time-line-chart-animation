@@ -8,6 +8,11 @@
   stroke-width: 1.5px;
 }
 
+.point {
+  fill: #000;
+  stroke: none;
+}
+
 </style>
 <svg width="960" height="500"></svg>
 <script src="http://d3js.org/d3.v4.min.js"></script>
@@ -75,6 +80,15 @@ g.append("g")
     .ease(d3.easeQuadInOut)
     .on("start", tick);
 
+var pointG = g.append("g");
+
+pointG.datum(data)
+  .append("circle")
+    .attr("class", "point")
+    .attr("r", 3.5)
+    .attr("cx", function(d, i) { return x(d[i].date); })
+    .attr("cy", function(d, i) { return y(d[i].value); })
+
 function tick() {
 
   // Push a new data point onto the back.
@@ -97,6 +111,22 @@ function tick() {
   svg.select(".axis--x")
     .attr("transform", "translate(0," + y(0) + ")")
     .call(d3.axisBottom(x));
+
+  var p = pointG.selectAll("circle")
+    .data(data);
+
+  p.attr("transform", "translate(" + x(data[0].date) + ",0)")
+    .attr("cx", function(d, i) { return x(d.date); })
+    .attr("cy", function(d, i) { return y(d.value); });
+
+  p.exit().remove();
+
+  p.enter().append("circle")
+    .attr("class", "point")
+    .attr("r", 3.5)
+    .attr("transform", "translate(" + x(data[0].date) + ",0)")
+    .attr("cx", function(d, i) { return x(d.date); })
+    .attr("cy", function(d, i) { return y(d.value); });
 
   svg.select(".axis--y")
     .transition()
