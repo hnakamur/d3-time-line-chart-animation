@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.line {
+  fill: none;
+  stroke: #f00;
+  stroke-width: 1.5px;
+}
+
+</style>
+<svg width="960" height="500"></svg>
+<script src="http://d3js.org/d3.v4.min.js"></script>
+<script>
+
+var n = 40,
+    random = d3.randomNormal(0, .2);
+
+var timeRange = (n - 2) * 1000;
+var endTime = new Date();
+var startTime = new Date(endTime.getTime() - timeRange);
+
+console.log('startTime', startTime, 'endTime', endTime);
+
+var data = d3.range(n).map(function(i) {
+  return {
+    date: new Date(startTime.getTime() + (timeRange * i / n)),
+    value: random()
+  }
+});
+console.log('data', data);
+
+var svg = d3.select("svg"),
+    margin = {top: 20, right: 20, bottom: 20, left: 40},
+    width = +svg.attr("width") - margin.left - margin.right,
+    height = +svg.attr("height") - margin.top - margin.bottom,
+    g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var x = d3.scaleTime()
+    .domain([startTime, endTime])
+    .range([0, width]);
+
+var y = d3.scaleLinear()
+    .domain([-1, 1])
+    .range([height, 0]);
+
+var line = d3.line()
+    // .curve(d3.curveBasis)
+    .x(function(d, i) { return x(d.date); })
+    .y(function(d, i) { return y(d.value); });
+
+g.append("defs").append("clipPath")
+    .attr("id", "clip")
+  .append("rect")
+    .attr("width", width)
+    .attr("height", height);
+
+g.append("g")
+    .attr("class", "axis axis--x")
+    .attr("transform", "translate(0," + y(0) + ")")
+    .call(d3.axisBottom(x));
+
+g.append("g")
+    .attr("class", "axis axis--y")
+    .call(d3.axisLeft(y));
+
+var duration = 1000;
+
+g.append("g")
+  .append("path")
+    .datum(data)
+    .attr("class", "line")
+  .transition()
+    .duration(duration)
+    .ease(d3.easeQuadInOut)
+    .on("start", tick);
+
+function tick() {
+
+  // Push a new data point onto the back.
+  data.push({
+    date: new Date(),
+    value: random()
+  });
+
+  x.domain([data[0].date, data[data.length-1].date]);
+  y.domain([
+    d3.min(data, function(d) { return d.value; }),
+    d3.max(data, function(d) { return d.value; })
+  ]).nice();
+
+  svg.select(".axis--x")
+    .attr("transform", "translate(0," + y(0) + ")")
+    .call(d3.axisBottom(x));
+
+  svg.select(".axis--y")
+    .call(d3.axisLeft(y));
+
+  // Redraw the line.
+  d3.select(this)
+      .attr("d", line)
+      .attr("transform", null);
+
+  // Slide it to the left.
+  d3.active(this)
+      .attr("transform", "translate(" + x(data[0].date) + ",0)")
+    .transition()
+      .on("start", tick);
+
+  // Pop the old data point off the front.
+  data.shift();
+}
+
+</script>
