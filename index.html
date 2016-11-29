@@ -2,14 +2,20 @@
 <meta charset="utf-8">
 <style>
 
+.axis {
+  font-size: 16px;
+}
+
 .line {
   fill: none;
   stroke: #f00;
   stroke-width: 1.5px;
+  stroke-opacity: 0.5;
 }
 
 .point {
   fill: #000;
+  fill-opacity: 0.5;
   stroke: none;
 }
 
@@ -17,8 +23,9 @@
 <svg width="960" height="500"></svg>
 <script src="http://d3js.org/d3.v4.min.js"></script>
 <script>
+// This code is based on https://bl.ocks.org/mbostock/1642874
 
-var n = 40,
+var n = 100,
     randNorm = d3.randomNormal(0, .2);
 
 // function random() {
@@ -33,15 +40,12 @@ var timeRange = (n - 2) * duration;
 var endTime = new Date();
 var startTime = new Date(endTime.getTime() - timeRange);
 
-console.log('startTime', startTime, 'endTime', endTime);
-
 var data = d3.range(n).map(function(i) {
   return {
     date: new Date(startTime.getTime() + (timeRange * i / n)),
     value: random()
   }
 });
-console.log('data', data);
 
 var svg = d3.select("svg"),
     margin = {top: 20, right: 20, bottom: 20, left: 40},
@@ -69,15 +73,7 @@ g.append("defs").append("clipPath")
     .attr("height", height);
 
 g.append("g")
-    .attr("class", "axis axis--x")
-    .attr("transform", "translate(0," + y(0) + ")")
-    .call(d3.axisBottom(x));
-
-g.append("g")
-    .attr("class", "axis axis--y")
-    .call(d3.axisLeft(y));
-
-g.append("g")
+    .attr("clip-path", "url(#clip)")
   .append("path")
     .datum(data)
     .attr("class", "line")
@@ -94,6 +90,15 @@ pointG.datum(data)
     .attr("r", 3.5)
     .attr("cx", function(d, i) { return x(d[i].date); })
     .attr("cy", function(d, i) { return y(d[i].value); })
+
+g.append("g")
+    .attr("class", "axis axis--x")
+    .attr("transform", "translate(0," + y(0) + ")")
+    .call(d3.axisBottom(x));
+
+g.append("g")
+    .attr("class", "axis axis--y")
+    .call(d3.axisLeft(y));
 
 function tick() {
 
