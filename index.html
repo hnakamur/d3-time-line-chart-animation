@@ -3,7 +3,7 @@
 <style>
 
 .axis {
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .line {
@@ -21,7 +21,7 @@
 
 </style>
 <svg width="960" height="500"></svg>
-<script src="//d3js.org/d3.v4.min.js"></script>
+<script src="http://d3js.org/d3.v4.min.js"></script>
 <script>
 // This code is based on https://bl.ocks.org/mbostock/1642874
 
@@ -37,7 +37,7 @@ var n = 100,
 // According to https://github.com/d3/d3-random#randomUniform, you can get a uniform random
 // between 0 and 99 (inclusive) with Math.random() * 100 | 0.
 // Here we multiply a few Math.random() to increase the possibility of lower values.
-var random = function() { return Math.random() * Math.random() * Math.random() *  Math.random() * Math.random() * 20 | 0 };
+var random = function() { return  Math.random() * Math.random() * Math.random() *  Math.random() * Math.random() * 20 | 0 };
 
 var duration = 500;
 
@@ -62,19 +62,14 @@ var x = d3.scaleTime()
     .domain([startTime, endTime])
     .range([0, width]);
 
+var minY = 0;
+
 var y = d3.scaleLinear()
     .domain([
-      d3.min(data, function(d) { return d.value; }),
+      minY,
       d3.max(data, function(d) { return d.value; })
     ]).nice()
     .range([height, 0]);
-
-// var y = d3.scaleOrdinal()
-//     .domain([
-//       d3.min(data, function(d) { return d.value; }),
-//       d3.max(data, function(d) { return d.value; })
-//     ])
-//     .range([height, 0]);
 
 var line = d3.line()
     // .curve(d3.curveBasis)
@@ -111,9 +106,14 @@ g.append("g")
     .attr("transform", "translate(0," + y(0) + ")")
     .call(d3.axisBottom(x));
 
+function buildYAxis() {
+  var maxY = d3.max(data, function(d) { return d.value; })
+  return maxY < 10 ? d3.axisLeft(y).ticks(maxY) : d3.axisLeft(y);
+}
+
 g.append("g")
     .attr("class", "axis axis--y")
-    .call(d3.axisLeft(y));
+    .call(buildYAxis());
 
 function tick() {
 
@@ -130,13 +130,9 @@ function tick() {
   startTime = data[0].date;
   x.domain([startTime, endTime]);
   y.domain([
-    d3.min(data, function(d) { return d.value; }),
+    minY,
     d3.max(data, function(d) { return d.value; })
-  ]).nice();
-  // y.domain([
-  //   d3.min(data, function(d) { return d.value; }),
-  //   d3.max(data, function(d) { return d.value; })
-  // ]);
+  ]);
 
   g.select(".axis--x")
     .attr("transform", "translate(0," + y(0) + ")")
@@ -160,7 +156,7 @@ function tick() {
 
   g.select(".axis--y")
     .transition()
-    .call(d3.axisLeft(y));
+    .call(buildYAxis());
 
   // Redraw the line.
   d3.select(this)
